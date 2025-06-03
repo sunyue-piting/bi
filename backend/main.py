@@ -1,12 +1,4 @@
 
-import sys
-
-try:
-    import ssl
-except ModuleNotFoundError:
-    ssl = None
-    sys.modules['ssl'] = None
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -17,14 +9,7 @@ import models
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 class FundBase(BaseModel):
     name: str
@@ -38,12 +23,9 @@ class Fund(FundBase):
         orm_mode = True
 
 @app.get("/funds", response_model=List[Fund])
-def list_funds(search: Optional[str] = None):
+def list_funds():
     db = SessionLocal()
-    if search:
-        funds = db.query(models.Fund).filter(models.Fund.name.ilike(f"%{search}%")).all()
-    else:
-        funds = db.query(models.Fund).all()
+    funds = db.query(models.Fund).all()
     db.close()
     return funds
 
