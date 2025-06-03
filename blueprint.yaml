@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: funds-backend
+    env: docker
+    repo: https://github.com/sunyue-piting/bi
+    rootDir: backend
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        value: "postgresql://piting_fund_database_user:7jYtXdLOQLF0oHdJcm7xAsgB45BM2EZZ@dpg-d0veava4d50c73efqbg0-a.oregon-postgres.render.com/piting_fund_database"
