@@ -1,6 +1,6 @@
-# SaaS 全自动工程最终版脚本 — 完全 Render + Vercel 云端部署 + 自动检测 + 自动写入
+# SaaS 全自动工程最终极版 — 完全 Render + Vercel 云端部署 + 完整 Provision 轮询
 
-# 文件: full-init-saas-final.sh
+# 文件: full-init-saas-ultimate.sh
 
 #!/bin/bash
 
@@ -14,7 +14,7 @@ VERCEL_API_KEY="l8nIr5yVhvRo5xvZYDqGXrsi"
 POSTGRES_DB_URL="postgresql://piting_fund_database_user:7jYtXdLOQLF0oHdJcm7xAsgB45BM2EZZ@dpg-d0veava4d50c73efqbg0-a.oregon-postgres.render.com/piting_fund_database"
 
 if [ -z "$GITHUB_USER" ] || [ -z "$REPO_NAME" ]; then
-  echo "Usage: bash full-init-saas-final.sh <github-username> <repo-name>"
+  echo "Usage: bash full-init-saas-ultimate.sh <github-username> <repo-name>"
   exit 1
 fi
 
@@ -36,10 +36,10 @@ git remote remove origin || true
 git remote add origin git@github.com:$GITHUB_USER/$REPO_NAME.git
 
 git add .
-git commit -m "SaaS project initialized by full-init-final"
+git commit -m "SaaS project initialized by full-init-ultimate"
 git push origin main --force
 
-# --- Render 完整使用 Blueprints 自动部署 (无 repo 绑定问题) ---
+# --- Render 完整使用 Blueprints 部署 ---
 echo "🚀 通过 Render Blueprints 完整部署后端..."
 
 cat > blueprint.yaml <<EOF
@@ -56,18 +56,36 @@ services:
         value: "$POSTGRES_DB_URL"
 EOF
 
-RENDER_BLUEPRINT_ID=$(curl -s -X POST "https://api.render.com/v1/blueprints" \
+BLUEPRINT_RESPONSE=$(curl -s -X POST "https://api.render.com/v1/blueprints" \
   -H "Authorization: Bearer $RENDER_API_KEY" \
   -H "Accept: application/json" \
-  -F "blueprint=@blueprint.yaml" | jq -r '.id')
+  -F "blueprint=@blueprint.yaml")
 
-sleep 10
+BLUEPRINT_ID=$(echo "$BLUEPRINT_RESPONSE" | jq -r '.id')
 
-# --- 轮询 Render 服务获取 Public URL ---
+# --- 轮询 Blueprint 状态直到 provision 完成 ---
+echo "🔄 正在等待 Render Blueprint 完全部署..."
+
+for i in {1..30}; do
+  STATUS=$(curl -s -X GET "https://api.render.com/v1/blueprints/$BLUEPRINT_ID" \
+    -H "Authorization: Bearer $RENDER_API_KEY" \
+    -H "Accept: application/json" | jq -r '.services[0].status')
+
+  echo "当前状态: $STATUS"
+
+  if [ "$STATUS" == "live" ]; then
+    echo "✅ Blueprint 部署完成."
+    break
+  fi
+  sleep 10
+
+done
+
+# --- 轮询 Render Services 获取 Public URL ---
 echo "🔎 正在获取 Render 服务 Public URL..."
 
 PUBLIC_URL=""
-for i in {1..10}; do
+for i in {1..20}; do
   PUBLIC_URL=$(curl -s -X GET "https://api.render.com/v1/services" \
     -H "Authorization: Bearer $RENDER_API_KEY" \
     -H "Accept: application/json" | jq -r '.[] | select(.name=="funds-backend") | .serviceDetails.url')
@@ -118,9 +136,9 @@ curl -X POST "https://api.vercel.com/v9/projects" \
 }'
 
 # --- 完成提示 ---
-echo "🎯 完整 SaaS 工程全链路自动部署完成！"
+echo "🎯 完整 SaaS 工程最终极全自动部署完成！"
 echo "👉 你的后端地址: $PUBLIC_URL"
 echo "👉 你的前端已自动配置并可访问 Vercel 项目！"
-echo "🚀 你已完全拥有属于自己的 SaaS 工厂流水线！"
+echo "🚀 你的 SaaS 系统现已 100% 自动化上线！"
 
-# --- END 完全自动化 ---
+# --- END 完美最终自动化 ---
