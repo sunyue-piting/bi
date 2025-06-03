@@ -1,4 +1,4 @@
-# SaaS 全自动工程终极稳定修复版 — 完全 Render + Vercel 云端部署 + 完整 Provision 轮询
+# SaaS 全自动工程终极兼容修复版 — 完全 Render + Vercel 云端部署 + 完整 Provision 轮询
 
 # 文件: full-init-saas-ultimate.sh
 
@@ -69,7 +69,7 @@ echo "🔄 正在等待 Render Blueprint 完全部署..."
 for i in {1..30}; do
   STATUS=$(curl -s -X GET "https://api.render.com/v1/blueprints/$BLUEPRINT_ID" \
     -H "Authorization: Bearer $RENDER_API_KEY" \
-    -H "Accept: application/json" | jq -r '.services[0].status // "pending"')
+    -H "Accept: application/json" | jq -r '.[0].services[0].status // "pending"' || echo "pending")
 
   echo "当前状态: $STATUS"
 
@@ -136,7 +136,7 @@ curl -X POST "https://api.vercel.com/v9/projects" \
 }'
 
 # --- 完成提示 ---
-echo "🎯 完整 SaaS 工程终极稳定版自动部署完成！"
+echo "🎯 完整 SaaS 工程终极兼容版自动部署完成！"
 echo "👉 你的后端地址: $PUBLIC_URL"
 echo "👉 你的前端已自动配置并可访问 Vercel 项目！"
 echo "🚀 你的 SaaS 系统现已 100% 自动化上线！"
