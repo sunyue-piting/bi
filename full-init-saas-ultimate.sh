@@ -1,4 +1,4 @@
-# SaaS 全自动工程最终极版 — 完全 Render + Vercel 云端部署 + 完整 Provision 轮询
+# SaaS 全自动工程最终极修复版 — 完全 Render + Vercel 云端部署 + 完整 Provision 轮询
 
 # 文件: full-init-saas-ultimate.sh
 
@@ -69,7 +69,7 @@ echo "🔄 正在等待 Render Blueprint 完全部署..."
 for i in {1..30}; do
   STATUS=$(curl -s -X GET "https://api.render.com/v1/blueprints/$BLUEPRINT_ID" \
     -H "Authorization: Bearer $RENDER_API_KEY" \
-    -H "Accept: application/json" | jq -r '.services[0].status')
+    -H "Accept: application/json" | jq -r '.[0].services[0].status')
 
   echo "当前状态: $STATUS"
 
